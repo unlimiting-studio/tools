@@ -5,7 +5,7 @@ import { imageSize, type ImageInfo } from "../image";
 import { HttpError } from "../http";
 
 const MODEL = "typesafe/jev-1.14";
-const FACE_SCALE = 2.2;
+const FACE_SCALE = 2.4;
 const SUBJECT_SCALE = 1.15;
 const FACE_THRESHOLD = 0.5;
 const MAX_BYTES = 2 * 1024 * 1024;
