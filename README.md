@@ -6,7 +6,7 @@ unlimiting-studio 프로젝트에서 함께 사용하는 도구 API와 클라이
 |---|---|---|
 | 프로필 사진 크롭 | `POST /v1/profile-crop` | 사진에서 프로필용 정사각형 영역을 계산합니다 |
 
-휴대폰에서 직접 써 보려면 https://tools.yechanny.workers.dev/demo 를 엽니다. 데모 페이지의 키(`DEMO_API_KEY` 시크릿)는 이 Worker의 Origin에서만 동작합니다. 데모 페이지는 `clients/web` 빌드 결과를 그대로 사용하며, `npm run deploy`가 배포 전에 다시 빌드합니다.
+휴대폰에서 크롭 화면을 직접 써 보려면 https://tools.yechanny.workers.dev/demo 를 엽니다. 데모 페이지의 키(`DEMO_API_KEY` 시크릿)는 이 Worker의 Origin에서만 동작합니다. 데모 페이지는 `clients/web`을 esbuild로 묶어 사용하며, `npm run deploy`가 배포 전에 다시 묶습니다.
 
 ## 구조
 
@@ -68,7 +68,7 @@ X-App-Id: <앱 ID>          (앱 ID를 제한한 키에서만 필요)
 ### 웹
 
 ```bash
-npm i --allow-remote=all https://github.com/unlimiting-studio/tools/releases/download/v0.1.0/unlimiting-studio-tools-0.1.0.tgz
+npm i --allow-remote=all https://github.com/unlimiting-studio/tools/releases/download/v0.2.0/unlimiting-studio-tools-0.2.0.tgz
 ```
 
 npm 12부터 URL로 패키지를 설치하려면 `--allow-remote=all`이 필요합니다.
@@ -87,6 +87,29 @@ const rect = await tools.profileCropRect(file);
 
 `size`를 생략하면 원본 해상도로 자릅니다. 출력 형식은 `type`(기본 `image/jpeg`)과 `quality`(기본 0.9)로 지정합니다.
 
+#### 크롭 화면
+
+사용자가 직접 맞추는 크롭 화면은 `@unlimiting-studio/tools/cropper`에 있습니다. 자동 크롭 결과를 기본값으로 띄우고, 사용자는 사진을 끌거나 두 손가락으로 확대해 고칩니다. 화면 조작은 [Cropper.js](https://github.com/fengyuanchen/cropperjs) v1에 맡기며, CSS는 패키지가 직접 넣으므로 따로 불러오지 않아도 됩니다.
+
+```ts
+import { createProfileCropper } from "@unlimiting-studio/tools/cropper";
+
+// 컨테이너 크기만큼 그린다. 높이를 지정해 둔다.
+const cropper = createProfileCropper(container, {
+  image: file,
+  client: tools,          // 자동 크롭 API 호출. 이미 계산한 값이 있으면 initialRect로 넘긴다
+  shape: "circle",        // circle | square | rounded (cornerRadius: 한 변 대비 비율, 기본 0.2)
+  grid: "interacting",    // interacting(조작할 때) | always | hidden
+  onError: (e) => {},     // API가 실패해도 가운데 크롭 상태로 계속 쓸 수 있다
+});
+
+const { blob, pixels } = await cropper.crop({ size: 512 });   // 정사각형 이미지
+cropper.reset();          // 자동 크롭 결과로 되돌리기
+cropper.destroy();
+```
+
+API 응답이 오기 전에 사용자가 사진을 움직였다면 자동 크롭 결과를 적용하지 않습니다. 프레임이 원형이어도 결과 이미지는 정사각형입니다.
+
 ### iOS
 
 Xcode에서 **File > Add Package Dependencies**를 열고 `https://github.com/unlimiting-studio/tools`를 추가합니다. iOS 15 이상과 macOS 12 이상을 지원합니다.
@@ -100,6 +123,25 @@ let (image, rect) = try await tools.profileCrop(uiImage, size: 512)   // UIImage
 let result = try await tools.profileCrop(data: jpegData, size: 512)   // JPEG·HEIC 등 Data → CGImage
 ```
 
+사용자가 크롭 영역을 직접 고르게 하려면 `UnlimitingToolsUI` 제품을 추가합니다(iOS 전용, [TOCropViewController](https://github.com/TimOliver/TOCropViewController) 사용). 고정된 정사각형 틀 아래에서 사진을 끌고 확대하며, 처음에는 자동 크롭 영역에서 시작합니다. API 응답을 기다리는 동안에는 가운데 크롭을 보여 주고, 실패해도 가운데 크롭으로 계속 쓸 수 있습니다.
+
+```swift
+import UnlimitingToolsUI
+
+let cropper = ProfileCropperViewController(
+    image: uiImage, client: tools,   // 미리 계산한 영역이 있으면 initialCrop: rect.crop
+    options: .init(shape: .circle, grid: .whileInteracting, outputSize: 512)   // .square, .roundedSquare()
+)
+cropper.onCrop = { result in   // result.image, result.pixelRect(원본 픽셀), result.crop(비율)
+    cropper.dismiss(animated: true)
+}
+cropper.onCancel = { cropper.dismiss(animated: true) }
+cropper.onError = { error in print(error) }   // 자동 크롭 실패
+present(cropper, animated: true)
+```
+
+SwiftUI에서는 `ProfileCropperView(image:client:options:onCrop:onCancel:)`를 `.fullScreenCover` 안에 넣습니다. 툴바의 초기화 버튼은 자동 크롭 영역으로 되돌립니다.
+
 ### Android
 
 `settings.gradle.kts`에 JitPack 저장소를 추가하고 의존성을 선언합니다. minSdk 24 이상을 지원합니다.
@@ -110,7 +152,7 @@ dependencyResolutionManagement {
 }
 
 dependencies {
-    implementation("com.github.unlimiting-studio:tools:v0.1.0")
+    implementation("com.github.unlimiting-studio:tools:v0.2.0")
 }
 ```
 
@@ -120,6 +162,37 @@ val tools = ToolsClient(context, apiKey = "tk_...")   // X-App-Id로 패키지�
 val result = tools.profileCrop(bitmap, size = 512)   // suspend 함수
 val fromBytes = tools.profileCrop(jpegBytes, size = 512)   // EXIF 회전을 적용합니다
 ```
+
+사용자가 크롭 영역을 직접 고르는 화면도 같은 라이브러리에 있습니다([uCrop](https://github.com/Yalantis/uCrop) 2.2.11의 제스처 뷰 사용). 고정된 정사각형 틀 아래에서 사진을 끌고 확대하며, 처음에는 자동 크롭 영역에서 시작합니다. API 응답을 기다리는 동안에는 가운데 크롭을 보여 주고, 실패해도 가운데 크롭으로 계속 쓸 수 있습니다. 응답 전에 사용자가 사진을 움직였다면 자동 크롭 결과를 적용하지 않습니다.
+
+```kotlin
+val cropLauncher = registerForActivityResult(ProfileCropContract()) { result ->
+    result ?: return@registerForActivityResult   // 취소
+    val bitmap = result.decodeBitmap()   // result.uri(캐시의 JPEG), result.pixelRect(원본 픽셀), result.crop(비율)
+}
+
+cropLauncher.launch(
+    ProfileCropRequest(
+        image = photoUri,
+        apiKey = "tk_...",            // 미리 계산한 영역이 있으면 initialCrop = rect.crop
+        shape = CropShape.CIRCLE,     // SQUARE, ROUNDED_SQUARE(cornerRadius: 한 변 대비 비율, 기본 0.2)
+        gridMode = GridMode.WHILE_INTERACTING,   // ALWAYS, HIDDEN
+        outputSize = 512,             // 생략하면 원본 해상도
+    )
+)
+```
+
+화면을 직접 배치하려면 `ProfileCropView`를 씁니다. Compose에서는 `AndroidView`로 감쌉니다.
+
+```kotlin
+cropView.shape = CropShape.CIRCLE
+cropView.onAutoCropError = { e -> }          // 자동 크롭 실패
+cropView.setImage(bitmap, tools)             // 또는 setImage(bitmap, initialCrop)
+cropView.resetToAuto()                       // 자동 크롭 영역으로 되돌리기
+val (image, crop, pixelRect) = cropView.getCroppedImage(size = 512)
+```
+
+`ProfileCropActivity`의 버튼 문구는 앱에서 `unlimiting_tools_crop_cancel`·`unlimiting_tools_crop_reset`·`unlimiting_tools_crop_done` 문자열 리소스로 바꿀 수 있습니다.
 
 ## API 키 관리
 
@@ -187,6 +260,7 @@ cd clients/android
 ./gradlew :tools:connectedDebugAndroidTest \
   -Pandroid.testInstrumentationRunnerArguments.apiKey=tk_... \
   -Pandroid.testInstrumentationRunnerArguments.image=/data/local/tmp/test.jpg
+# 크롭 화면 테스트(ProfileCropActivityTest)는 API 키 없이 실행됩니다
 ```
 
 ### 릴리스

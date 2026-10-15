@@ -86,14 +86,8 @@ class ToolsClient(
     suspend fun profileCrop(bitmap: Bitmap, size: Int? = null): ProfileCropResult {
         val rect = profileCropRect(bitmap)
         return withContext(Dispatchers.Default) {
-            val w = bitmap.width.toDouble()
-            val h = bitmap.height.toDouble()
-            val x = (rect.crop.left * w).roundToInt()
-            val y = (rect.crop.top * h).roundToInt()
-            val side = max(1, minOf((rect.crop.width * w).roundToInt(), bitmap.width - x, bitmap.height - y))
-            var cropped = Bitmap.createBitmap(bitmap, x, y, side, side)
-            if (size != null && size != side) cropped = Bitmap.createScaledBitmap(cropped, size, size, true)
-            ProfileCropResult(rect, cropped, Rect(x, y, x + side, y + side))
+            val (cropped, pixelRect) = cropBitmap(bitmap, rect.crop, size)
+            ProfileCropResult(rect, cropped, pixelRect)
         }
     }
 
@@ -117,6 +111,14 @@ class ToolsClient(
             val h = (height * s).roundToInt()
             if (max(w, h) > 1568) throw ToolsException(400, "가로세로 비율이 너무 극단적인 이미지입니다")
             return w to h
+        }
+
+        /** 크롭 비율대로 정사각형을 잘라 원본 픽셀 영역과 함께 돌려준다. */
+        internal fun cropBitmap(bitmap: Bitmap, crop: CropRect, size: Int?): Pair<Bitmap, Rect> {
+            val (x, y, side) = CropMath.pixelRect(crop, bitmap.width, bitmap.height)
+            var cropped = Bitmap.createBitmap(bitmap, x, y, side, side)
+            if (size != null && size != side) cropped = Bitmap.createScaledBitmap(cropped, size, size, true)
+            return cropped to Rect(x, y, x + side, y + side)
         }
 
         internal fun encodeForApi(bitmap: Bitmap): ByteArray {

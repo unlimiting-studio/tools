@@ -12,7 +12,7 @@ extension ToolsClient {
         try await profileCropRect(Self.orientedCGImage(image))
     }
 
-    static func orientedCGImage(_ image: UIImage) throws -> CGImage {
+    package static func orientedCGImage(_ image: UIImage) throws -> CGImage {
         if image.imageOrientation == .up, let cg = image.cgImage { return cg }
         let format = UIGraphicsImageRendererFormat()
         format.scale = image.scale

@@ -12,3 +12,5 @@ local.properties
 .idea/
 .DS_Store
 .cloudflare/
+Package.resolved
+*.tgz

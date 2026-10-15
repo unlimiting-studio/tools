@@ -134,3 +134,5 @@ function canvasToBlob(canvas: AnyCanvas, type: string, quality: number): Promise
     canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("이미지 인코딩 실패"))), type, quality),
   );
 }
+
+export type ToolsClient = ReturnType<typeof createToolsClient>;

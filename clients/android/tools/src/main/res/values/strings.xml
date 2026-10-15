@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ProfileCropActivity 버튼 문구. 앱에서 같은 이름으로 덮어쓸 수 있다. -->
+<resources>
+    <string name="unlimiting_tools_crop_cancel">취소</string>
+    <string name="unlimiting_tools_crop_reset">자동</string>
+    <string name="unlimiting_tools_crop_done">완료</string>
+</resources>

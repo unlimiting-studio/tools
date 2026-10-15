@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
+    <application>
+        <!-- 화면을 돌려도 다시 만들지 않는다(사진 디코딩·자동 크롭 요청을 반복하지 않도록). -->
+        <activity
+            android:name="studio.unlimiting.tools.ProfileCropActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|uiMode"
+            android:exported="false"
+            android:theme="@android:style/Theme.Material.NoActionBar" />
+    </application>
 </manifest>

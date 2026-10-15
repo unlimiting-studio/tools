@@ -1,7 +1,7 @@
 {
   "name": "@unlimiting-studio/tools",
-  "version": "0.1.0",
-  "description": "unlimiting-studio tools API 웹 클라이언트 (프로필 사진 자동 크롭 등)",
+  "version": "0.2.0",
+  "description": "unlimiting-studio tools API 웹 클라이언트 (프로필 사진 자동 크롭과 크롭 화면)",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -9,6 +9,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./cropper": {
+      "types": "./dist/cropper.d.ts",
+      "import": "./dist/cropper.js"
     }
   },
   "files": [
@@ -16,8 +20,8 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsc",
-    "prepare": "tsc"
+    "build": "node scripts/gen-css.mjs && tsc",
+    "prepare": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -26,6 +30,10 @@
   },
   "license": "MIT",
   "devDependencies": {
+    "esbuild": "^0.28.2",
     "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "cropperjs": "^1.7.0"
   }
 }

@@ -11,6 +11,13 @@ public struct CropRect: Codable, Sendable, Equatable {
     public let top: Double
     public let width: Double
     public let height: Double
+
+    public init(left: Double, top: Double, width: Double, height: Double) {
+        self.left = left
+        self.top = top
+        self.width = width
+        self.height = height
+    }
 }
 
 public struct ProfileCropRect: Codable, Sendable {
@@ -34,6 +41,11 @@ public struct ToolsError: Error, LocalizedError, Sendable {
     public let status: Int
     public let message: String
     public var errorDescription: String? { message }
+
+    public init(status: Int, message: String) {
+        self.status = status
+        self.message = message
+    }
 }
 
 public final class ToolsClient: Sendable {
@@ -79,14 +91,11 @@ public final class ToolsClient: Sendable {
     /// - Parameter size: 출력 한 변 픽셀. nil이면 원본 해상도로 자른다.
     public func profileCrop(_ image: CGImage, size: Int? = nil) async throws -> ProfileCropResult {
         let rect = try await profileCropRect(image)
-        let W = CGFloat(image.width), H = CGFloat(image.height)
-        let x = (rect.crop.left * W).rounded(), y = (rect.crop.top * H).rounded()
-        let side = max(1, min((rect.crop.width * W).rounded(), W - x, H - y))
-        let pixelRect = CGRect(x: x, y: y, width: side, height: side)
+        let pixelRect = Self.pixelRect(rect.crop, width: image.width, height: image.height)
         guard var cropped = image.cropping(to: pixelRect) else {
             throw ToolsError(status: 0, message: "이미지를 자르지 못했습니다")
         }
-        if let size, size != Int(side) { cropped = try Self.resize(cropped, width: size, height: size) }
+        if let size, size != Int(pixelRect.width) { cropped = try Self.resize(cropped, width: size, height: size) }
         return ProfileCropResult(rect: rect, image: cropped, pixelRect: pixelRect)
     }
 
@@ -114,6 +123,14 @@ public final class ToolsClient: Sendable {
         return image
     }
 
+    /// 비율 좌표를 원본 픽셀 기준 정사각형 영역으로 바꾼다. 이미지 밖으로 넘치지 않게 줄인다.
+    package static func pixelRect(_ crop: CropRect, width: Int, height: Int) -> CGRect {
+        let W = CGFloat(width), H = CGFloat(height)
+        let x = (crop.left * W).rounded(), y = (crop.top * H).rounded()
+        let side = max(1, min((crop.width * W).rounded(), W - x, H - y))
+        return CGRect(x: x, y: y, width: side, height: side)
+    }
+
     static func encodeForAPI(_ image: CGImage) throws -> Data {
         let W = CGFloat(image.width), H = CGFloat(image.height)
         var s = sendLongSide / max(W, H)
@@ -123,7 +140,7 @@ public final class ToolsClient: Sendable {
         return try jpeg(resize(image, width: w, height: h), quality: 0.85)
     }
 
-    static func resize(_ image: CGImage, width: Int, height: Int) throws -> CGImage {
+    package static func resize(_ image: CGImage, width: Int, height: Int) throws -> CGImage {
         guard let ctx = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0,
                                   space: CGColorSpace(name: CGColorSpace.sRGB)!,
                                   bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else {
