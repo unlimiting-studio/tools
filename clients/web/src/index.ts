@@ -1,7 +1,7 @@
 // unlimiting-studio tools 웹 클라이언트.
 // 이미지를 줄여서 API에 보내고, 받은 크롭 영역으로 원본을 브라우저에서 자른다.
 
-export const DEFAULT_BASE_URL = "https://tools.unlimiting.workers.dev";
+export const DEFAULT_BASE_URL = "https://tools.yechanny.workers.dev";
 
 /** 이미지 크기에 대한 비율(0~1). 픽셀 기준으로 정사각형이다. */
 export interface CropRect {

@@ -102,7 +102,7 @@ class ToolsClient(
         profileCrop(withContext(Dispatchers.Default) { decodeOriented(bytes) }, size)
 
     companion object {
-        const val DEFAULT_BASE_URL = "https://tools.unlimiting.workers.dev"
+        const val DEFAULT_BASE_URL = "https://tools.yechanny.workers.dev"
 
         // 서버(Jev)는 각 변 256~1568px를 받는다. 비용은 픽셀 수에 비례하므로 긴 변 512px로 보낸다.
         private const val SEND_LONG_SIDE = 512.0

@@ -9,7 +9,7 @@ unlimiting-studio 프로젝트에서 함께 사용하는 도구 API와 클라이
 ## 구조
 
 ```
-worker/            Cloudflare Worker (API, API 키 관리)
+worker/            Cloudflare Worker (API, API 키 관리, cf CLI로 배포)
 clients/web/       웹 클라이언트 (TypeScript, npm 패키지 @unlimiting-studio/tools)
 clients/ios/       iOS·macOS 클라이언트 (Swift Package, 루트 Package.swift에서 선언)
 clients/android/   Android 클라이언트 (Kotlin, JitPack 배포)
@@ -142,23 +142,25 @@ node scripts/keys.mjs delete k_xxxxxxxxxxxx
 
 ### Worker
 
+Cloudflare 작업에는 `cf` CLI를 사용합니다. 설정은 `worker/cloudflare.config.ts`에 있습니다.
+
 ```bash
 cd worker
 npm i
 cp .dev.vars.example .dev.vars   # OPENROUTER_API_KEY, ADMIN_TOKEN 입력
-npm run dev                      # http://localhost:8787
+npm run dev                      # cf dev
 npm test
-npm run typecheck
+npm run typecheck                # cf workers types && tsc
 ```
 
-처음 배포할 때는 KV 네임스페이스를 만들고 `wrangler.jsonc`의 `kv_namespaces[0].id`에 입력한 뒤 시크릿을 등록합니다.
+배포 주소는 https://tools.yechanny.workers.dev 입니다. KV 네임스페이스는 첫 배포 때 자동으로 만들어집니다. 시크릿은 파일로 전달하고, 배포 후 파일을 삭제합니다.
 
 ```bash
-npx wrangler kv namespace create KEYS
-npx wrangler secret put OPENROUTER_API_KEY
-npx wrangler secret put ADMIN_TOKEN
-npm run deploy
+cf deploy --secrets-file <OPENROUTER_API_KEY와 ADMIN_TOKEN을 담은 .env 파일>
+cf workers secrets list --worker tools   # 시크릿 등록 확인
 ```
+
+시크릿을 바꾸지 않는 배포는 `npm run deploy`(`cf deploy`)로 실행합니다.
 
 ### 새 도구 추가
 

@@ -3,7 +3,7 @@
 //   node scripts/keys.mjs create <name> [--origin https://a.com]... [--app com.example.app]...
 //   node scripts/keys.mjs list
 //   node scripts/keys.mjs delete <id>
-const base = process.env.TOOLS_BASE_URL ?? "https://tools.unlimiting.workers.dev";
+const base = process.env.TOOLS_BASE_URL ?? "https://tools.yechanny.workers.dev";
 const token = process.env.TOOLS_ADMIN_TOKEN;
 if (!token) {
   console.error("TOOLS_ADMIN_TOKEN 환경변수가 필요합니다");

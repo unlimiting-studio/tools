@@ -37,7 +37,7 @@ public struct ToolsError: Error, LocalizedError, Sendable {
 }
 
 public final class ToolsClient: Sendable {
-    public static let defaultBaseURL = URL(string: "https://tools.unlimiting.workers.dev")!
+    public static let defaultBaseURL = URL(string: "https://tools.yechanny.workers.dev")!
 
     // 서버(Jev)는 각 변 256~1568px를 받는다. 비용은 픽셀 수에 비례하므로 긴 변 512px로 보낸다.
     static let sendLongSide: CGFloat = 512
