@@ -66,8 +66,10 @@ X-App-Id: <앱 ID>          (앱 ID를 제한한 키에서만 필요)
 ### 웹
 
 ```bash
-npm i https://github.com/unlimiting-studio/tools/releases/download/v0.1.0/unlimiting-studio-tools-0.1.0.tgz
+npm i --allow-remote=all https://github.com/unlimiting-studio/tools/releases/download/v0.1.0/unlimiting-studio-tools-0.1.0.tgz
 ```
+
+npm 12부터 URL로 패키지를 설치하려면 `--allow-remote=all`이 필요합니다. pnpm과 yarn은 옵션 없이 같은 URL로 설치할 수 있습니다.
 
 ```ts
 import { createToolsClient } from "@unlimiting-studio/tools";
