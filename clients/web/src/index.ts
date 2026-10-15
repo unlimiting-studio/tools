@@ -94,9 +94,15 @@ export function createToolsClient({ apiKey, baseUrl = DEFAULT_BASE_URL, fetch: f
 }
 
 // EXIF 회전을 적용해 디코딩한다 (서버는 회전 정보를 보지 않는다).
-function toBitmap(source: Source): Promise<ImageBitmap> {
-  if (source instanceof ImageBitmap) return Promise.resolve(source);
-  return createImageBitmap(source, { imageOrientation: "from-image" });
+// "from-image"를 모르는 구형 Safari·Chrome은 옵션 없이 디코딩하며, 이때도 기본 동작이 EXIF 회전 적용이다.
+async function toBitmap(source: Source): Promise<ImageBitmap> {
+  if (source instanceof ImageBitmap) return source;
+  try {
+    return await createImageBitmap(source, { imageOrientation: "from-image" });
+  } catch (e) {
+    if (!(e instanceof TypeError)) throw e;
+    return createImageBitmap(source);
+  }
 }
 
 async function encodeForApi(bitmap: ImageBitmap): Promise<Blob> {

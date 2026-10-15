@@ -6,6 +6,8 @@ unlimiting-studio 프로젝트에서 함께 사용하는 도구 API와 클라이
 |---|---|---|
 | 프로필 사진 크롭 | `POST /v1/profile-crop` | 사진에서 프로필용 정사각형 영역을 계산합니다 |
 
+휴대폰에서 직접 써 보려면 https://tools.yechanny.workers.dev/demo 를 엽니다. 데모 페이지의 키(`DEMO_API_KEY` 시크릿)는 이 Worker의 Origin에서만 동작합니다. 데모 페이지는 `clients/web` 빌드 결과를 그대로 사용하며, `npm run deploy`가 배포 전에 다시 빌드합니다.
+
 ## 구조
 
 ```

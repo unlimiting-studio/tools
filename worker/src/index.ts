@@ -1,4 +1,5 @@
 import { CORS_HEADERS, HttpError, json } from "./http";
+import { demoClientJs, demoPage } from "./demo/page";
 import { authenticate, createKey, deleteKey, listKeys, requireAdmin } from "./keys";
 import { profileCrop } from "./tools/profileCrop";
 
@@ -11,7 +12,9 @@ async function route(request: Request, env: Env): Promise<Response> {
   const { pathname } = new URL(request.url);
   const method = request.method;
 
-  if (method === "GET" && pathname === "/") return json({ tools: Object.keys(TOOLS).map((t) => `POST /v1/${t}`) });
+  if (method === "GET" && pathname === "/") return json({ tools: Object.keys(TOOLS).map((t) => `POST /v1/${t}`), demo: "/demo" });
+  if (method === "GET" && pathname === "/demo") return demoPage(env);
+  if (method === "GET" && pathname === "/demo/client.js") return demoClientJs();
 
   const tool = pathname.match(/^\/v1\/([\w-]+)$/)?.[1];
   if (tool) {
