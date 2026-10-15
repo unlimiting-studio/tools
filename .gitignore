@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.cache/
+.wrangler/
+.dev.vars
+.build/
+.swiftpm/
+build/
+.gradle/
+local.properties
+*.iml
+.idea/
+.DS_Store

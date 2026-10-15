@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 로컬 wrangler dev(http://10.0.2.2)로 테스트하기 위해 테스트 APK에서만 평문 HTTP를 허용한다. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application android:usesCleartextTraffic="true" />
+</manifest>
